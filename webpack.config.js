@@ -101,6 +101,12 @@ if(isDev){//根据项目环境决定如何展示
         new webpack.NoEmitOnErrorsPlugin()
     )
 } else {
+    //如果把类库代码和业务代码打包到一起，就必须一起更新，所以要拆分打包
+    config.entry={
+        app:path.join(__dirname,'src/index.js'),
+        //框架数组
+        verdor:['vue']
+    }
     //生产环境对出口文件也要进行重置
     config.output.filename="bundle.[chunkhash:8].js"
     //正式环境下对stylus文件另做设置
@@ -123,7 +129,13 @@ if(isDev){//根据项目环境决定如何展示
         }
     )
     config.plugins.push(
-        new ExtractPlugin('stylus.[contentHash:8].css')
+        new ExtractPlugin('stylus.[contentHash:8].css'),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'vendor'//一定要和框架数组一样的名字
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name:'runtime'
+        })//单独打包webpack文件,规避新模块插入导致ID变化以至于浏览器无法缓存
     )
 }
 module.exports=config;//这样就可以随意更改配置
